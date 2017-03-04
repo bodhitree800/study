@@ -1,0 +1,44 @@
+1. ubuntu setting 缺少 language surpport
+
+sudo apt-get install  language-selector-gnome
+
+2. after a new ubuntu 14.04 installed,
+do this:
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install build-essential meld git gawk eclipse-cdt eclipse-cdt-launch-remote eclipse-rse minicom
+sudo apt-get install gtk+-2.0-dev
+#if you have a 64-bit Linux host install your distributions 32-bit compatibility libraries.
+sudo dpkg --add-architecture i386 
+sudo apt-get update
+sudo apt-get install libz1:i386 libncurses5:i386 libbz2-1.0:i386 libstdc++6:i386
+
+安装wine
+sudo apt-get install wine
+
+3. 周立功的arm工具链比较土，版本是14.09，是32位的，在64位的系统上，还需要装32bit兼容库。
+
+也可以直接安装64bit的工具链，版本是14.11
+
+参见：
+http://developer.toradex.com/knowledge-base/how-to-setup-environment-for-embedded-linux-application-development
+
+Install the cross tool chain
+
+A cross toolchain (often times just called cross-compiler) is used to build an application on the host which later on can be executed on the target device.
+
+Beginning with image V2.6, as part of our OpenEmbedded Jethro update we transitioned to using version 5.2 of the gcc compiler. Linaro releases well tested binary toolchains which can be used to cross compile software for our modules (choose arm-linux-gnueabihf):
+
+https://releases.linaro.org/components/toolchain/binaries/5.2-2015.11-2/arm-linux-gnueabihf/
+
+Beginning with image V2.0, we transitioned to using the hard-float ABI:
+
+http://releases.linaro.org/14.11/components/toolchain/binaries/
+
+Note: Since the 14.11 release Linaro only provides x86_64 toolchains. If you use 32-bit Linux on your host machine (check using uname -m), you can still download the older 14.09 release which is still 32-bit:
+
+http://releases.linaro.org/14.09/components/toolchain/binaries/
+
+
+
+
