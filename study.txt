@@ -39,6 +39,200 @@ Note: Since the 14.11 release Linaro only provides x86_64 toolchains. If you use
 
 http://releases.linaro.org/14.09/components/toolchain/binaries/
 
+1. 使用的是Iris载板
+
+1. environment varibles
+ 
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+export PATH=~/toradex/toolchain/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin:$PATH
+
+
+2. to compile kernel
+
+make colibri_imx6_defconfig
+make menuconfig
+make uImage
+
+make -j3 uImage LOADADDR=10008000 2>&1 | tee build.log
+make imx6dl-colibri-eval-v3.dtb
+
+3. to compile uboot
+
+make colibri_imx6_defconfig
+
+4. 升级内核的方法
+
+scp 
+
+5. 获取内部的源代码
+git clone -b toradex_imx_3.14.52_1.1.0_ga git://git.toradex.com/linux-toradex.git
+
+
+
+??
+where can download iMX6_Firmware_Guide.pdf
+
+1. X1-137 GPIO7-IO12  fpga_cfg_program
+2. X1-168 GPIO4_IO05  fpga_cfg_cclk
+3. X1-180 GPIO1_IO02  fpga_cfg_spisdo
+4. X1-174 GPIO1_IO04  fpga_cfg_init
+5. X1-55  GPIO1_IO07  fpga_cfg_done
+
+6. 设备树相关的文档的目录
+kernel-source\Documentation\devicetree\bindings\bus\imx-weim.txt
+
+
+
+10. 串口模式下刷系统的方法
+
+http://developer.toradex.com/knowledge-base/flashing-linux-on-imx6-modules
+
+更新uboot
+run setupdate
+run update
+
+重启之后再进入串口，再更新内核/dtb/rootfs
+run setupdate
+run migrate
+
+12. 设置静态IP的方法
+参见：
+http://developer.toradex.com/knowledge-base/ethernet-network-(linux)#systemdnetworkd
+
+cd /etc/systemd/network/
+
+scp wired.network root@192.168.1.6:/etc/systemd/network
+
+把wired.network文件拷贝到上面的目录中，文件的内容如下：
+
+[Match]
+Name=eth0
+
+[Network]
+Address=192.168.1.199/24
+Gateway=192.168.1.1
+DNS=8.8.8.8
+
+系统默认使用connman管理网络，需要卸载connman，然后使用systemd.network
+
+opkg remove connman-gnome
+opkg remove connman 
+
+13. 更新设备树文件，然后才能够使用emmc芯片
+ 
+scp imx6dl-colibri-eval-v3.dtb root@192.168.1.199:/media/mmcblk0p1
+重启系统，然后可以看到/dev目录下有mmcblk1文件。
+
+14. 格式化sd卡为ext3
+
+umount /dev/mmcblk1p1
+
+fdisk /dev/mmcblk1
+
+使用t -》 L -》 83 命令修改分区的文件系统类型。修改为linux。
+
+使用w命令，写入分区信息。
+
+使用n命令，创建分区。
+创建分区之后，就可以看到/dev目录下，会有mmcblk1p1这个设备文件。
+
+//这个命令可以看到所有的分区
+fdisk -l
+
+umount /dev/mmcblk1p1
+
+//格式化分区为ext3
+mkfs.ext3 /dev/mmcblk1p1
+格式化需要大概2-3分钟时间。
+
+//mount
+
+mount /dev/mmcblk1p1 /media/mmcblk1p1
+
+然后使用df看结果。
+
+8. 修改本地时间，否则默认本地时间是UTC0
+
+cd /etc
+cp /usr/share/zoneinfo/Asia/Hong_Kong localtime
+
+可以手动设置当前时间。如下命令：
+
+date -s "2016-10-23 15:34:00"
+
+9. 拷贝app/config.txt/fpga到系统
+
+scp app root@192.168.1.199:/home
+scp config.txt root@192.168.1.199:/home
+scp fpga.bin root@192.168.1.199:/home
+scp myapp.service root@192.168.1.199:/etc/systemd/system
+
+11. 自动启动应用程序的方法
+
+http://developer.toradex.com/knowledge-base/how-to-autorun-application-at-the-start-up-in-linux
+
+cd /etc/systemd/system
+
+scp myapp.service root@192.168.1.199:/etc/systemd/system
+
+编写myapp.serivce文件
+
+[Unit]
+Description=myapp service
+After=multi-user.target
+ 
+[Service]
+Type=simple
+ExecStart=/home/app auto
+ 
+[Install]
+WantedBy=multi-user.target
+
+看状态
+systemctl status myapp.service
+
+启动service
+systemctl start myapp.service
+
+停止service
+systemctl stop myapp.service
+
+把service加入到自动运行
+systemctl enable myapp.service
+
+从自动运行取消
+systemctl disable myapp.service
+
+12. 查看所有的线程
+
+ps xH
+
+13. readline 库的安装和使用
+
+下载和解压缩readline之后，
+
+先配置，其中--prefix指定了安装readline lib库的路径：
+
+./configure --host=arm-linux CC=arm-linux-gnueabihf-gcc --prefix=/home/jack/toradex/toolchain/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/libc/usr
+
+在编译和安装即可。
+make
+
+make install
+
+14.ubuntu 14.04 终端和vim显示中文乱码解决方法
+
+ vi /etc/vim/vimrc
+
+加入
+
+set ts=4
+set fileencodings=ucs-bom,utf-8,gbk,chinese,cp936
+
+
+
+
 
 
 
